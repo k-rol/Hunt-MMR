@@ -1,0 +1,38 @@
+{
+  "Actions": [
+    {
+      "Icon": "Images/icon",
+      "Name": "Hunt-MMR",
+      "States": [
+        {
+          "Image": "Images/pluginAction",
+          "TitleAlignment": "middle",
+          "FontSize": "12"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Display your MMR in realtime",
+      "UUID": "Hunt_MMR.pluginaction",
+      "PropertyInspectorPath": "PropertyInspector/PluginActionPI.html"
+    }
+  ],
+  "Author": "TODO_ENTER_YOUR_NAME",
+  "Name": "Hunt-MMR",
+  "Description": "Display your MMR in realtime",
+  "Icon": "Images/pluginIcon",
+  "URL": "https://github.com/k-rol?tab=repositories",
+  "Version": "1.0",
+  "CodePath": "Hunt_MMR",
+  "Category": "Custom",
+  "CategoryIcon": "Images/categoryIcon",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "4.9"
+  }
+}
