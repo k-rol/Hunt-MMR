@@ -7,28 +7,44 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Hunt_MMR
 {
-    [PluginActionId("Hunt_MMR.pluginaction")]
+    /*
+     *     
+    1 star: between 0 and 2000 MMR.
+    2 stars: between 2000 and 2300 MMR.
+    3 stars: between 2300 and 2600 MMR.
+    4 stars: between 2600 and 2750 MMR.
+    5 stars: between 2750 and 3000 MMR.
+    6 stars: between 3000 and 5000 MMR.
+    *
+    */
+
+    [PluginActionId("com.k-rol.huntmmr")]
     public class PluginAction : PluginBase
     {
+        string attributeContent = string.Empty;
+        string AttributesPath = @"D:\SteamLibrary\steamapps\common\Hunt Showdown\user\profiles\default\attributes.xml";
+        string HuntPlayerName = "toolonglyf";
+        
         private class PluginSettings
         {
             public static PluginSettings CreateDefaultSettings()
             {
                 PluginSettings instance = new PluginSettings();
-                instance.OutputFileName = String.Empty;
-                instance.InputString = String.Empty;
+                instance.AttributesPath = String.Empty;
+                instance.HuntPlayerName = String.Empty;
                 return instance;
             }
 
             [FilenameProperty]
-            [JsonProperty(PropertyName = "outputFileName")]
-            public string OutputFileName { get; set; }
+            [JsonProperty(PropertyName = "attributesPath")]
+            public string AttributesPath { get; set; }
 
-            [JsonProperty(PropertyName = "inputString")]
-            public string InputString { get; set; }
+            [JsonProperty(PropertyName = "huntPlayerName")]
+            public string HuntPlayerName { get; set; }
         }
 
         #region Private Members
@@ -59,9 +75,93 @@ namespace Hunt_MMR
             Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
         }
 
-        public override void KeyReleased(KeyPayload payload) { }
+        public override void KeyReleased(KeyPayload payload) 
+        {
+            
+        }
 
-        public override void OnTick() { }
+        public async override void OnTick() 
+        {
+            string mmr = GetMMR();
+            await Connection.SetTitleAsync(mmr + Environment.NewLine + CalculateStars(mmr));
+        }
+
+        private string CalculateStars(string mmr)
+        {
+            int mmr_int = int.Parse(mmr);
+            string stars = string.Empty;
+
+            if (mmr_int <= 2000)
+                stars = "*";
+
+            else if (mmr_int > 2000 && mmr_int <= 2300)
+                stars = "**";
+
+            else if (mmr_int > 2300 && mmr_int <= 2600)
+                stars = "***";
+
+            else if (mmr_int > 2600 && mmr_int <= 2750)
+                stars = "****";
+
+            else if (mmr_int > 2750 && mmr_int <= 3000)
+                stars = "*****";
+
+            else if (mmr_int > 3000)
+                stars = "******";
+            return stars;
+        }
+        private string GetMMR()
+        {
+            //Extract MMR from attributes.xml
+            string teamPrefix = String.Empty;
+            string teamSuffix = "_blood_line_name";
+            string playerNodeName = string.Empty;
+            string MMR = String.Empty;
+
+            //Load File Content
+            attributeContent = File.ReadAllText(settings.AttributesPath);
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(attributeContent);
+
+            XmlNodeList nodelist = xmlDoc.ChildNodes;
+            //teamName = every child nodes which _.name is like *_ownteam AND _.value == true
+            foreach (XmlNode node in nodelist[0].ChildNodes)
+            {
+                XmlElement element = (XmlElement)node;
+                if (element.GetAttribute("name").Contains("_ownteam") && element.GetAttribute("value") == "true")
+                {
+                    teamPrefix = element.GetAttribute("name");
+                    break;
+                }
+            }
+
+            //(MissionBagPlayer_0)	
+            teamPrefix = teamPrefix.Replace("Team", "Player").Replace("_ownteam", "");
+
+            //PlayerName => For every node with name = MissionBagPlayer_0_?_blood_line_name
+            //              If(_.value == "toolonglyf") return _.name(MissionBagPlayer_0_1_blood_line_name)
+            foreach (XmlNode node in nodelist[0].ChildNodes)
+            {
+                XmlElement element = (XmlElement)node;
+                if (element.GetAttribute("name").Contains(teamPrefix) && element.GetAttribute("name").Contains(teamSuffix) && element.GetAttribute("value") == settings.HuntPlayerName)
+                {
+                    playerNodeName = element.GetAttribute("name");
+                }
+            }
+
+            //MMR = allnodes.node[name = MissionBagPlayer_0_1_mmr].value
+            foreach (XmlNode node in nodelist[0].ChildNodes)
+            {
+                string mmrNodeNade = playerNodeName.Replace(teamSuffix, "_mmr");
+                XmlElement element = (XmlElement)node;
+                if (element.GetAttribute("name") == mmrNodeNade)
+                {
+                    MMR = element.GetAttribute("value");
+                }
+
+            }
+            return MMR;
+        }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
         {
