@@ -16,14 +16,14 @@
       "PropertyInspectorPath": "PropertyInspector/PluginActionPI.html"
     }
   ],
-  "Author": "TODO_ENTER_YOUR_NAME",
+  "Author": "Carol Ouellet",
   "Name": "Hunt-MMR",
-  "Description": "Display your MMR in realtime",
+  "Description": "Display your MMR",
   "Icon": "Images/pluginIcon",
   "URL": "https://github.com/k-rol?tab=repositories",
   "Version": "1.0",
   "CodePath": "com.k-rol.huntmmr",
-  "Category": "Custom",
+  "Category": "k-rol",
   "CategoryIcon": "Images/categoryIcon",
   "OS": [
     {

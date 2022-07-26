@@ -2,16 +2,15 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
 namespace Hunt_MMR
 {
-    /*
+    /* Hunt MMR Reference
      *     
     1 star: between 0 and 2000 MMR.
     2 stars: between 2000 and 2300 MMR.
@@ -25,10 +24,8 @@ namespace Hunt_MMR
     [PluginActionId("com.k-rol.huntmmr")]
     public class PluginAction : PluginBase
     {
-        string attributeContent = string.Empty;
-        string AttributesPath = @"D:\SteamLibrary\steamapps\common\Hunt Showdown\user\profiles\default\attributes.xml";
-        string HuntPlayerName = "toolonglyf";
-        
+        int tickTime = 5000;
+
         private class PluginSettings
         {
             public static PluginSettings CreateDefaultSettings()
@@ -83,7 +80,8 @@ namespace Hunt_MMR
         public async override void OnTick() 
         {
             string mmr = GetMMR();
-            await Connection.SetTitleAsync(mmr + Environment.NewLine + CalculateStars(mmr));
+            await Connection.SetTitleAsync(Environment.NewLine + Environment.NewLine + mmr + Environment.NewLine + CalculateStars(mmr));
+            Thread.Sleep(tickTime);
         }
 
         private string CalculateStars(string mmr)
@@ -118,8 +116,10 @@ namespace Hunt_MMR
             string playerNodeName = string.Empty;
             string MMR = String.Empty;
 
+            FixURL();
+
             //Load File Content
-            attributeContent = File.ReadAllText(settings.AttributesPath);
+            string attributeContent = File.ReadAllText(settings.AttributesPath);
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(attributeContent);
 
@@ -163,10 +163,27 @@ namespace Hunt_MMR
             return MMR;
         }
 
-        public override void ReceivedSettings(ReceivedSettingsPayload payload)
+        private void FixURL()
+        {
+            string newPath = WebUtility.UrlDecode(settings.AttributesPath);
+            newPath = newPath.Replace(@"C:\fakepath\", "");
+            settings.AttributesPath = newPath;
+
+            Logger.Instance.LogMessage(TracingLevel.INFO, Message: settings.HuntPlayerName + " : " + settings.AttributesPath);
+            SaveSettings();
+        }
+
+        /*        public override void ReceivedSettings(ReceivedSettingsPayload payload)
+                {
+                    Tools.AutoPopulateSettings(settings, payload.Settings);
+                    SaveSettings();
+                }*/
+
+        public async override void ReceivedSettings(ReceivedSettingsPayload payload)
         {
             Tools.AutoPopulateSettings(settings, payload.Settings);
-            SaveSettings();
+            // Return fixed filename back to the Property Inspector
+            await Connection.SetSettingsAsync(JObject.FromObject(settings));
         }
 
         public override void ReceivedGlobalSettings(ReceivedGlobalSettingsPayload payload) { }
@@ -179,5 +196,6 @@ namespace Hunt_MMR
         }
 
         #endregion
+
     }
 }
