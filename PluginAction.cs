@@ -24,7 +24,6 @@ namespace Hunt_MMR
     [PluginActionId("com.k-rol.huntmmr")]
     public class PluginAction : PluginBase
     {
-        int tickTime = 5000;
 
         private class PluginSettings
         {
@@ -81,7 +80,6 @@ namespace Hunt_MMR
         {
             string mmr = GetMMR();
             await Connection.SetTitleAsync(Environment.NewLine + Environment.NewLine + mmr + Environment.NewLine + CalculateStars(mmr));
-            Thread.Sleep(tickTime);
         }
 
         private string CalculateStars(string mmr)
@@ -169,7 +167,7 @@ namespace Hunt_MMR
             newPath = newPath.Replace(@"C:\fakepath\", "");
             settings.AttributesPath = newPath;
 
-            Logger.Instance.LogMessage(TracingLevel.INFO, Message: settings.HuntPlayerName + " : " + settings.AttributesPath);
+            //Logger.Instance.LogMessage(TracingLevel.INFO, Message: settings.HuntPlayerName + " : " + settings.AttributesPath);
             SaveSettings();
         }
 
